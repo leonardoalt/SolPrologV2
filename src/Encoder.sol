@@ -1,0 +1,61 @@
+// SPDX-License-Identifier: GPL V3
+pragma solidity ^0.7.0;
+
+import 'Logic.sol';
+
+contract Encoder {
+	mapping (uint => bytes) symbolHash;
+
+	function encode(FrontendTerm memory _inTerm) internal returns (Term memory outTerm) {
+		assert(_inTerm.value.length > 0);
+
+		byte first = _inTerm.value[0];
+		if (first == '[')
+			outTerm.kind = TermKind.List;
+		else if (_inTerm.children.length > 0)
+			outTerm.kind = TermKind.Predicate;
+		else if (isDigit(first))
+			outTerm.kind = TermKind.Number;
+		else if (isUppercase(first))
+			outTerm.kind = TermKind.Variable;
+		else if (_inTerm.value.length == 1 && first == '_')
+			outTerm.kind = TermKind.Ignore;
+		else
+			outTerm.kind = TermKind.Literal;
+
+		if (outTerm.kind == TermKind.Number)
+			outTerm.symbol = str2uint(_inTerm.value);
+		else if (
+			outTerm.kind == TermKind.Literal ||
+			outTerm.kind == TermKind.Variable ||
+			outTerm.kind == TermKind.Predicate
+		) {
+			outTerm.symbol = uint(keccak256(_inTerm.value));
+			symbolHash[outTerm.symbol] = _inTerm.value;
+		}
+
+		outTerm.arguments = new Term[](_inTerm.children.length);
+		for (uint i = 0; i < _inTerm.children.length; ++i)
+			outTerm.arguments[i] = encode(_inTerm.children[i]);
+	}
+
+	function str2uint(bytes memory _str) internal pure returns (uint n) {
+		uint p10 = 1;
+		for (uint i = _str.length - 1; i >= 0; --i) {
+			n += p10 * uint8(_str[i]);
+			p10 *= 10;
+		}
+	}
+
+	function isDigit(byte _char) internal pure returns (bool) {
+		return _char >= '0' && _char <= '9';
+	}
+
+	function isLowercase(byte _char) internal pure returns (bool) {
+		return _char >= 'a' && _char <= 'z';
+	}
+
+	function isUppercase(byte _char) internal pure returns (bool) {
+		return _char >= 'A' && _char <= 'Z';
+	}
+}

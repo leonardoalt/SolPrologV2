@@ -1,4 +1,5 @@
-pragma solidity ^0.6.7;
+// SPDX-License-Identifier: GPL V3
+pragma solidity ^0.7.0;
 
 contract Prolog {
 }
