@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL V3
 pragma solidity ^0.7.0;
 
-import 'Logic.sol';
+import './Logic.sol';
 
 library Encoder {
 	struct Info {
@@ -35,7 +35,7 @@ library Encoder {
 
 		outTerm.arguments = new Term[](_inTerm.children.length);
 		for (uint i = 0; i < _inTerm.children.length; ++i)
-			outTerm.arguments[i] = encode(_inTerm.children[i]);
+			outTerm.arguments[i] = encode(_inTerm.children[i], _info);
 	}
 
 	function str2uint(bytes memory _str) internal pure returns (uint n) {
