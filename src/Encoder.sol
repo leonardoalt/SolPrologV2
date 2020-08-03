@@ -3,15 +3,18 @@ pragma solidity ^0.7.0;
 
 import 'Logic.sol';
 
-contract Encoder {
-	mapping (uint => bytes) symbolHash;
+library Encoder {
+	struct Info {
+		mapping (uint => bytes) hash2Symbol;
+	}
 
-	function encode(FrontendTerm memory _inTerm) internal returns (Term memory outTerm) {
+	function encode(FrontendTerm memory _inTerm, Info storage _info) internal returns (Term memory outTerm) {
 		assert(_inTerm.value.length > 0);
 
 		byte first = _inTerm.value[0];
 		if (first == '[')
 			outTerm.kind = TermKind.List;
+		// TODO ListHeadTail
 		else if (_inTerm.children.length > 0)
 			outTerm.kind = TermKind.Predicate;
 		else if (isDigit(first))
@@ -25,13 +28,9 @@ contract Encoder {
 
 		if (outTerm.kind == TermKind.Number)
 			outTerm.symbol = str2uint(_inTerm.value);
-		else if (
-			outTerm.kind == TermKind.Literal ||
-			outTerm.kind == TermKind.Variable ||
-			outTerm.kind == TermKind.Predicate
-		) {
+		else {
 			outTerm.symbol = uint(keccak256(_inTerm.value));
-			symbolHash[outTerm.symbol] = _inTerm.value;
+			_info.hash2Symbol[outTerm.symbol] = _inTerm.value;
 		}
 
 		outTerm.arguments = new Term[](_inTerm.children.length);

@@ -7,6 +7,7 @@ enum TermKind {
 	Literal,
 	Variable,
 	List,
+	ListHeadTail,
 	Predicate
 }
 
