@@ -2,13 +2,13 @@ pragma solidity ^0.6.7;
 
 import "ds-test/test.sol";
 
-import "./Solprologv2.sol";
+import "./Prolog.sol";
 
-contract Solprologv2Test is DSTest {
-    Solprologv2 solprologv;
+contract PrologTest is DSTest {
+	Prolog prolog;
 
     function setUp() public {
-        solprologv = new Solprologv2();
+        prolog = new Prolog();
     }
 
     function testFail_basic_sanity() public {
