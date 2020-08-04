@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL V3
-pragma solidity ^0.7.0;
+pragma solidity ^0.6.7;
 
 import './Logic.sol';
 
@@ -39,9 +39,10 @@ library Encoder {
 	}
 
 	function str2uint(bytes memory _str) internal pure returns (uint n) {
+		assert(_str.length > 0);
 		uint p10 = 1;
-		for (uint i = _str.length - 1; i >= 0; --i) {
-			n += p10 * uint8(_str[i]);
+		for (uint i = _str.length; i > 0; --i) {
+			n += p10 * (uint8(_str[i - 1]) - 48);
 			p10 *= 10;
 		}
 	}
