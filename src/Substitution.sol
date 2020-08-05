@@ -10,10 +10,19 @@ library Substitution {
 	}
 
 	function set(Term memory _term1, Term memory _term2, Info storage _info) internal {
+		assert(_info.usedKeys.length > 0);
 		bytes32 hash = Logic.hash(_term1);
 		uint frame = _info.usedKeys.length - 1;
-		_info.frames[frame][hash] = _term2;
+		set(_info.frames[frame][hash], _term2);
 		_info.usedKeys[frame].push(uint(hash));
+	}
+
+	function set(Term storage _to, Term memory _from) internal {
+		_to.kind = _from.kind;
+		_to.symbol = _from.symbol;
+		delete _to.arguments;
+		for (uint i = 0; i < _from.arguments.length; ++i)
+			set(_to.arguments.push(), _from.arguments[i]);
 	}
 
 	function get(Term memory _term, Info storage _info) internal view returns (Term memory) {
