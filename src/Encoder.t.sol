@@ -10,8 +10,8 @@ contract EncoderTest is DSTest {
 
 	using Encoder for FrontendTerm;
 
-    function setUp() public {
-    }
+	function setUp() public {
+	}
 
 	function test_adam() public {
 		FrontendTerm memory adam;
@@ -163,11 +163,11 @@ contract EncoderTest is DSTest {
 		assertEq(t.arguments.length, 3);
 	}
 
-    function testFail_basic_sanity() public {
-        assertTrue(false);
-    }
+	function testFail_basic_sanity() public {
+		assertTrue(false);
+	}
 
-    function test_basic_sanity() public {
-        assertTrue(true);
-    }
+	function test_basic_sanity() public {
+		assertTrue(true);
+	}
 }
