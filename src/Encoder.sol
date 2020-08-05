@@ -12,11 +12,15 @@ library Encoder {
 		assert(_inTerm.value.length > 0);
 
 		byte first = _inTerm.value[0];
-		if (first == '[')
-			outTerm.kind = TermKind.List;
-		// TODO ListHeadTail
-		else if (_inTerm.children.length > 0)
-			outTerm.kind = TermKind.Predicate;
+		if (first == '[') {
+			if (_inTerm.value[1] == ']')
+				outTerm.kind = TermKind.List;
+			else {
+				assert(_inTerm.value[1] == '|');
+				assert(_inTerm.value[2] == ']');
+				outTerm.kind = TermKind.ListHeadTail;
+			}
+		}
 		else if (isDigit(first))
 			outTerm.kind = TermKind.Number;
 		else if (isUppercase(first))
@@ -24,7 +28,7 @@ library Encoder {
 		else if (_inTerm.value.length == 1 && first == '_')
 			outTerm.kind = TermKind.Ignore;
 		else
-			outTerm.kind = TermKind.Literal;
+			outTerm.kind = TermKind.Predicate;
 
 		if (outTerm.kind == TermKind.Number)
 			outTerm.symbol = str2uint(_inTerm.value);

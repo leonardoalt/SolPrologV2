@@ -4,7 +4,6 @@ pragma solidity ^0.6.7;
 enum TermKind {
 	Number,
 	Ignore,
-	Literal,
 	Variable,
 	List,
 	ListHeadTail,
