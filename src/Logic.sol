@@ -33,6 +33,18 @@ library Logic {
 			args[i] = hash(_term.arguments[i]);
 		return keccak256(abi.encodePacked(_term.kind, _term.symbol, args));
 	}
+
+	function validate(Term memory _term) internal pure {
+		if (_term.kind == TermKind.Number || _term.kind == TermKind.Ignore || _term.kind == TermKind.Variable)
+			require(_term.arguments.length == 0);
+		else if (_term.kind == TermKind.ListHeadTail)
+			// The last argument represents the tail. Head must contain at least one term.
+			require(_term.arguments.length >= 2);
+
+		// Symbol should not be used in case of _ and lists
+		if (_term.kind == TermKind.Ignore || _term.kind == TermKind.List || _term.kind == TermKind.ListHeadTail)
+			require(_term.symbol == 0);
+	}
 }
 
 library TermBuilder {
