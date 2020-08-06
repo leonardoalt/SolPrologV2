@@ -19,8 +19,8 @@ contract EncoderTest is DSTest {
 
 	function test_set_var_atom() public {
 		info.push();
-		Term memory x = bytes("X").term();
-		Term memory a = bytes("a").term();
+		Term memory x = bytes("X").atom();
+		Term memory a = bytes("a").atom();
 		x.set(a, info);
 		assertTrue(x.get(info).termsEqualInMemory(a));
 		info.pop();
@@ -28,8 +28,8 @@ contract EncoderTest is DSTest {
 
 	function test_set_ignore_var() public {
 		info.push();
-		Term memory x = bytes("_").term();
-		Term memory y = bytes("Y").term();
+		Term memory x = bytes("_").atom();
+		Term memory y = bytes("Y").atom();
 		x.set(y, info);
 		assertTrue(x.get(info).termsEqualInMemory(y));
 		info.pop();
@@ -37,8 +37,8 @@ contract EncoderTest is DSTest {
 
 	function test_set_var_var() public {
 		info.push();
-		Term memory x = bytes("X").term();
-		Term memory y = bytes("Y").term();
+		Term memory x = bytes("X").atom();
+		Term memory y = bytes("Y").atom();
 		x.set(y, info);
 		assertTrue(x.get(info).termsEqualInMemory(y));
 		info.pop();
@@ -46,10 +46,10 @@ contract EncoderTest is DSTest {
 
 	function test_set_var_pred() public {
 		info.push();
-		Term memory x = bytes("X").term();
-		Term memory p = bytes("p").term(2);
-		p.arguments[0] = bytes("a").term();
-		p.arguments[1] = bytes("b").term();
+		Term memory x = bytes("X").atom();
+		Term memory p = bytes("p").pred(2);
+		p.arguments[0] = bytes("a").atom();
+		p.arguments[1] = bytes("b").atom();
 		x.set(p, info);
 		assertTrue(x.get(info).termsEqualInMemory(p));
 		info.pop();

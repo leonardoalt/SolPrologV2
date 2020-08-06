@@ -87,12 +87,12 @@ library TermBuilder {
 		t.symbol = 1; // 1 rather than 0 to be able to discern Ignore from an uninitialized piece of memory.
 	}
 
-	function number(uint _value) internal pure returns (Term memory t) {
+	function num(uint _value) internal pure returns (Term memory t) {
 		t.kind = TermKind.Number;
 		t.symbol = _value;
 	}
 
-	function variable(bytes memory _name) internal pure returns (Term memory t) {
+	function Var(bytes memory _name) internal pure returns (Term memory t) {
 		t.kind = TermKind.Variable;
 		t.symbol = uint(keccak256(_name));
 	}
@@ -101,7 +101,7 @@ library TermBuilder {
 		t.kind = TermKind.List;
 	}
 
-	function listHeadTail() internal pure returns (Term memory t) {
+	function listHT() internal pure returns (Term memory t) {
 		t.kind = TermKind.ListHeadTail;
 	}
 
@@ -114,20 +114,34 @@ library TermBuilder {
 	}
 
 	function atom(bytes memory _symbol) internal pure returns (Term memory t) {
-		return term(_symbol);
-	}
-
-	function pred(bytes memory _symbol, uint _argumentCount) internal pure returns (Term memory t) {
-		return term(_symbol, _argumentCount);
-	}
-
-	function term(bytes memory _symbol) internal pure returns (Term memory t) {
 		t.kind = TermKind.Predicate;
 		t.symbol = uint(keccak256(_symbol));
 	}
 
-	function term(bytes memory _symbol, uint _argumentCount) internal pure returns (Term memory t) {
-		t = term(_symbol);
+	function pred(bytes memory _symbol, uint _argumentCount) internal pure returns (Term memory t) {
+		t = atom(_symbol);
 		t.arguments = new Term[](_argumentCount);
+	}
+
+	// TODO: Define a more complete set of overloads or find a way to use arrays conveniently.
+	function pred(bytes memory _name, Term memory _term) internal pure returns (Term memory) {
+		Term memory p = pred(_name, 1);
+		p.arguments[0] = _term;
+		return p;
+	}
+
+	function pred(bytes memory _name, Term memory _term1, Term memory _term2) internal pure returns (Term memory) {
+		Term memory p = pred(_name, 2);
+		p.arguments[0] = _term1;
+		p.arguments[1] = _term2;
+		return p;
+	}
+
+	function pred(bytes memory _name, Term memory _term1, Term memory _term2, Term memory _term3) internal pure returns (Term memory) {
+		Term memory p = pred(_name, 3);
+		p.arguments[0] = _term1;
+		p.arguments[1] = _term2;
+		p.arguments[2] = _term3;
+		return p;
 	}
 }
