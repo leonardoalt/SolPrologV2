@@ -81,6 +81,19 @@ library Logic {
 
 		return true;
 	}
+
+	function copyToMemory(Term storage _input) internal returns (Term memory){
+		Term memory output = Term({
+			kind: _input.kind,
+			symbol: _input.symbol,
+			arguments: new Term[](_input.arguments.length)
+		});
+
+		for (uint i = 0; i < _input.arguments.length; ++i)
+			output.arguments[i] = copyToMemory(_input.arguments[i]);
+
+		return output;
+	}
 }
 
 contract TermBuilder {
