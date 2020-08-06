@@ -109,23 +109,23 @@ library TermBuilder {
 		t.arguments = new Term[](_argumentCount);
 	}
 
-	function compareMemory(Term memory _term1, Term memory _term2) internal view returns (bool) {
+	function termsEqualInMemory(Term memory _term1, Term memory _term2) internal view returns (bool) {
 		if (_term1.kind != _term2.kind || _term1.symbol != _term2.symbol || _term1.arguments.length != _term2.arguments.length)
 			return false;
 
 		for (uint i = 0; i < _term1.arguments.length; ++i)
-			if (!compareMemory(_term1.arguments[i], _term2.arguments[i]))
+			if (!termsEqualInMemory(_term1.arguments[i], _term2.arguments[i]))
 				return false;
 
 		return true;
 	}
 
-	function compare(Term storage _term1, Term memory _term2) internal view returns (bool) {
+	function termsEqualInStorage(Term storage _term1, Term memory _term2) internal view returns (bool) {
 		if (_term1.kind != _term2.kind || _term1.symbol != _term2.symbol || _term1.arguments.length != _term2.arguments.length)
 			return false;
 
 		for (uint i = 0; i < _term1.arguments.length; ++i)
-			if (!compare(_term1.arguments[i], _term2.arguments[i]))
+			if (!termsEqualInStorage(_term1.arguments[i], _term2.arguments[i]))
 				return false;
 
 		return true;

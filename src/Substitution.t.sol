@@ -21,7 +21,7 @@ contract EncoderTest is DSTest {
 		Term memory x = bytes("X").term();
 		Term memory a = bytes("a").term();
 		x.set(a, info);
-		assertTrue(x.get(info).compareMemory(a));
+		assertTrue(x.get(info).termsEqualInMemory(a));
 		info.pop();
 	}
 
@@ -30,7 +30,7 @@ contract EncoderTest is DSTest {
 		Term memory x = bytes("_").term();
 		Term memory y = bytes("Y").term();
 		x.set(y, info);
-		assertTrue(x.get(info).compareMemory(y));
+		assertTrue(x.get(info).termsEqualInMemory(y));
 		info.pop();
 	}
 
@@ -39,7 +39,7 @@ contract EncoderTest is DSTest {
 		Term memory x = bytes("X").term();
 		Term memory y = bytes("Y").term();
 		x.set(y, info);
-		assertTrue(x.get(info).compareMemory(y));
+		assertTrue(x.get(info).termsEqualInMemory(y));
 		info.pop();
 	}
 
@@ -50,7 +50,7 @@ contract EncoderTest is DSTest {
 		p.arguments[0] = bytes("a").term();
 		p.arguments[1] = bytes("b").term();
 		x.set(p, info);
-		assertTrue(x.get(info).compareMemory(p));
+		assertTrue(x.get(info).termsEqualInMemory(p));
 		info.pop();
 	}
 
