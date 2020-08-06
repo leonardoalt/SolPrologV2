@@ -57,6 +57,28 @@ library Logic {
 	function isEmptyStorage(Term storage _term) internal view returns (bool) {
 		return _term.kind == TermKind.Ignore && _term.symbol == 0 && _term.arguments.length == 0;
 	}
+
+	function termsEqualInMemory(Term memory _term1, Term memory _term2) internal view returns (bool) {
+		if (_term1.kind != _term2.kind || _term1.symbol != _term2.symbol || _term1.arguments.length != _term2.arguments.length)
+			return false;
+
+		for (uint i = 0; i < _term1.arguments.length; ++i)
+			if (!termsEqualInMemory(_term1.arguments[i], _term2.arguments[i]))
+				return false;
+
+		return true;
+	}
+
+	function termsEqualInStorage(Term storage _term1, Term memory _term2) internal view returns (bool) {
+		if (_term1.kind != _term2.kind || _term1.symbol != _term2.symbol || _term1.arguments.length != _term2.arguments.length)
+			return false;
+
+		for (uint i = 0; i < _term1.arguments.length; ++i)
+			if (!termsEqualInStorage(_term1.arguments[i], _term2.arguments[i]))
+				return false;
+
+		return true;
+	}
 }
 
 library TermBuilder {
@@ -107,27 +129,5 @@ library TermBuilder {
 	function term(bytes memory _symbol, uint _argumentCount) internal pure returns (Term memory t) {
 		t = term(_symbol);
 		t.arguments = new Term[](_argumentCount);
-	}
-
-	function termsEqualInMemory(Term memory _term1, Term memory _term2) internal view returns (bool) {
-		if (_term1.kind != _term2.kind || _term1.symbol != _term2.symbol || _term1.arguments.length != _term2.arguments.length)
-			return false;
-
-		for (uint i = 0; i < _term1.arguments.length; ++i)
-			if (!termsEqualInMemory(_term1.arguments[i], _term2.arguments[i]))
-				return false;
-
-		return true;
-	}
-
-	function termsEqualInStorage(Term storage _term1, Term memory _term2) internal view returns (bool) {
-		if (_term1.kind != _term2.kind || _term1.symbol != _term2.symbol || _term1.arguments.length != _term2.arguments.length)
-			return false;
-
-		for (uint i = 0; i < _term1.arguments.length; ++i)
-			if (!termsEqualInStorage(_term1.arguments[i], _term2.arguments[i]))
-				return false;
-
-		return true;
 	}
 }

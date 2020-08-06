@@ -11,6 +11,7 @@ contract EncoderTest is DSTest {
 
 	using Substitution for Term;
 	using Substitution for Substitution.Info;
+	using Logic for *;
 	using TermBuilder for *;
 
 	function setUp() public {
