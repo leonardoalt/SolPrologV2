@@ -2,8 +2,8 @@
 pragma solidity ^0.6.7;
 
 enum TermKind {
+	Ignore,  // NOTE: We depend on Ignore being the first element (uninitialized terms must be of this kind)
 	Number,
-	Ignore,
 	Variable,
 	List,
 	ListHeadTail,
@@ -42,8 +42,20 @@ library Logic {
 			require(_term.arguments.length >= 2);
 
 		// Symbol should not be used in case of _ and lists
-		if (_term.kind == TermKind.Ignore || _term.kind == TermKind.List || _term.kind == TermKind.ListHeadTail)
+		if (_term.kind == TermKind.List || _term.kind == TermKind.ListHeadTail)
 			require(_term.symbol == 0);
+		else if (_term.kind == TermKind.Ignore)
+			// NOTE: Ignore can't use symbol == 0 because it would then be indistinguishable from
+			// uninitialized memory.
+			require(_term.symbol == 1);
+	}
+
+	function isEmptyMemory(Term memory _term) internal pure returns (bool) {
+		return _term.kind == TermKind.Ignore && _term.symbol == 0 && _term.arguments.length == 0;
+	}
+
+	function isEmptyStorage(Term storage _term) internal view returns (bool) {
+		return _term.kind == TermKind.Ignore && _term.symbol == 0 && _term.arguments.length == 0;
 	}
 }
 
