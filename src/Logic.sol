@@ -60,6 +60,45 @@ library Logic {
 }
 
 library TermBuilder {
+	function ignore() internal pure returns (Term memory t) {
+		t.kind = TermKind.Ignore;
+		t.symbol = 1; // 1 rather than 0 to be able to discern Ignore from an uninitialized piece of memory.
+	}
+
+	function number(uint _value) internal pure returns (Term memory t) {
+		t.kind = TermKind.Number;
+		t.symbol = _value;
+	}
+
+	function variable(bytes memory _name) internal pure returns (Term memory t) {
+		t.kind = TermKind.Variable;
+		t.symbol = uint(keccak256(_name));
+	}
+
+	function list() internal pure returns (Term memory t) {
+		t.kind = TermKind.List;
+	}
+
+	function listHeadTail() internal pure returns (Term memory t) {
+		t.kind = TermKind.ListHeadTail;
+	}
+
+	function listHT(uint _headElementCount, Term memory _tail) internal pure returns (Term memory t) {
+		require(_headElementCount > 0);
+
+		t = listHT();
+		t.arguments = new Term[](_headElementCount + 1);
+		t.arguments[_headElementCount] = _tail;
+	}
+
+	function atom(bytes memory _symbol) internal pure returns (Term memory t) {
+		return term(_symbol);
+	}
+
+	function pred(bytes memory _symbol, uint _argumentCount) internal pure returns (Term memory t) {
+		return term(_symbol, _argumentCount);
+	}
+
 	function term(bytes memory _symbol) internal pure returns (Term memory t) {
 		t.kind = TermKind.Predicate;
 		t.symbol = uint(keccak256(_symbol));
