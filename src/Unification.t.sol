@@ -357,3 +357,119 @@ contract VariableUnificationTest is UnificationTestBase {
 		assertSubstitution(Var("Z"), atom("adam"));
 	}
 }
+
+
+contract IgnoreUnificationTest is UnificationTestBase {
+	function test_unify_should_unify_ignore_with_ignore() public {
+		// ?- _ = _.
+		assertUnify(ignore(), ignore());
+	}
+
+	function test_unify_should_unify_ignore_with_any_literal() public {
+		// ?- _ = adam.
+		assertUnify(ignore(), atom("adam"));
+		// true.
+
+		// ?- adam = _.
+		assertUnify(atom("adam"), ignore());
+		// true.
+
+		// ?- _ = 1.
+		assertUnify(ignore(), num(1));
+		// true.
+
+		// ?- _ = family(adam, paul).
+		assertUnify(ignore(), family("adam", "paul"));
+		// true.
+	}
+
+	function test_unify_should_not_unify_ignore_in_different_predicates() public {
+		// ?- family(_) = man(_).
+		assertNotUnify(pred("family", ignore()), pred("man", ignore()));
+		// false.
+	}
+
+	function test_unify_should_unify_ignore_with_variable() public {
+		// ?- _ = X.
+		assertUnify(ignore(), Var("X"));
+		// true.
+		assertNoSubstitution(Var("X"));
+	}
+
+	function test_unify_should_unify_ignore_with_predicate_containing_variable() public {
+		// ?- _ = family(adam, x).
+		assertUnify(ignore(), family(atom("adam"), Var("X")));
+		// true.
+		assertNoSubstitution(Var("X"));
+	}
+
+	function test_unify_should_unify_ignore_with_predicate_containing_ignore() public {
+		// ?- _ = family(adam, _).
+		assertUnify(ignore(), family(atom("adam"), ignore()));
+		// true.
+	}
+
+	function test_unify_should_not_unify_ignore_with_multiple_arguments() public {
+		// ?- family(_) = family(adam, eve).
+		assertNotUnify(family(ignore()), family("adam", "eve"));
+		// false.
+
+		// ?- family(_) = family(_, _).
+		assertNotUnify(family(ignore()), family(ignore(), ignore()));
+		// false.
+	}
+
+	function test_unify_should_unify_nested_ignore_with_literal() public {
+		// ?- family(_, paul) = family(adam, paul).
+		assertUnify(family(ignore(), atom("paul")), family("adam", "paul"));
+		// true.
+	}
+
+	function test_unify_should_unify_ignore_with_multiple_different_literals() public {
+		// ?- family(_, paul) = family(adam, _).
+		assertUnify(family(ignore(), atom("paul")), family(atom("adam"), ignore()));
+		// true.
+
+		// ?- family(_, _) = family(adam, family(paul, eve)).
+		assertUnify(family(ignore(), ignore()), family(atom("adam"), family("paul", "")));
+		// true.
+	}
+
+	function test_unify_should_not_unify_multiple_ignores_with_a_single_argument() public {
+		// ?- family(_, _) = family(adam).
+		assertNotUnify(family(ignore(), ignore()), family("adam"));
+		// false.
+	}
+
+	function test_unify_should_not_allow_using_ignore_to_skip_arguments() public {
+		// ?- family = family(_).
+		assertNotUnify(atom("family"), family(ignore()));
+		// false.
+
+		// ?- family(adam) = family(adam, _).
+		assertNotUnify(family("adam"), family(atom("adam"), ignore()));
+		// false.
+	}
+
+	function test_unify_should_unify_nested_ignore_with_ignore() public {
+		// ?- family(_, paul) = family(_, paul).
+		assertUnify(family(ignore(), atom("adam")), family(ignore(), atom("adam")));
+		// true.
+	}
+
+	function test_unify_should_unify_nested_ignore_with_variable_that_has_a_substitution_to_another_variable() public {
+		// ?- family(X, X) = family(Y, _).
+		assertUnify(family(Var("X"), Var("X")), family(Var("Y"), ignore()));
+		// X = Y.
+		assertSubstitution(Var("X"), Var("Y"));
+		assertNoSubstitution(Var("Y"));
+	}
+
+	function test_unify_should_unify_nested_ignore_with_variable_that_has_a_substitution_to_atom() public {
+		// ?- family(X, X) = family(adam, _).
+		assertUnify(family(Var("X"), Var("X")), family(atom("adam"), ignore()));
+		// X = adam.
+		assertSubstitution(Var("X"), atom("adam"));
+		assertNoSubstitution(Var("Y"));
+	}
+}

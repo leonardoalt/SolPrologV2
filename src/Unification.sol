@@ -15,6 +15,9 @@ library Unification {
 		Logic.validate(_term1);
 		Logic.validate(_term2);
 
+		if (_term1.kind == TermKind.Ignore || _term2.kind == TermKind.Ignore)
+			return true;
+
 		bytes32 hash1 = Logic.hash(_term1);
 		if (_term1.kind == TermKind.Variable) {
 			if (!Logic.isEmptyStorage(io_substitutions[hash1]))
