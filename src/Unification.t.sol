@@ -27,6 +27,42 @@ contract Fixtures is TermBuilder{
 	function family(Term memory _member1, Term memory _member2, Term memory _member3) internal pure returns (Term memory) {
 		return pred("family", _member1, _member2, _member3);
 	}
+
+	function list(Term memory _element1) internal pure returns (Term memory) {
+		Term memory l = list();
+		l.arguments = new Term[](1);
+		l.arguments[0] = _element1;
+		return l;
+	}
+
+	function list(Term memory _element1, Term memory _element2) internal pure returns (Term memory) {
+		Term memory l = list();
+		l.arguments = new Term[](2);
+		l.arguments[0] = _element1;
+		l.arguments[1] = _element2;
+		return l;
+	}
+
+	function list(Term memory _element1, Term memory _element2, Term memory _element3) internal pure returns (Term memory) {
+		Term memory l = list();
+		l.arguments = new Term[](3);
+		l.arguments[0] = _element1;
+		l.arguments[1] = _element2;
+		l.arguments[2] = _element3;
+		return l;
+	}
+
+	function list(uint _element1) internal pure returns (Term memory) {
+		return list(num(_element1));
+	}
+
+	function list(uint _element1, uint _element2) internal pure returns (Term memory) {
+		return list(num(_element1), num(_element2));
+	}
+
+	function list(uint _element1, uint _element2, uint _element3) internal pure returns (Term memory) {
+		return list(num(_element1), num(_element2), num(_element3));
+	}
 }
 
 
@@ -471,5 +507,169 @@ contract IgnoreUnificationTest is UnificationTestBase {
 		// X = adam.
 		assertSubstitution(Var("X"), atom("adam"));
 		assertNoSubstitution(Var("Y"));
+	}
+}
+
+
+contract ListUnificationTest is UnificationTestBase {
+	function test_unify_should_unify_empty_list_only_with_that_exact_literal() public {
+		// ?- [] = [].
+		assertUnify(list(), list());
+		// true.
+
+		// ?- [] = 1.
+		assertNotUnify(list(), num(1));
+		// false.
+
+		// ?- [] = adam.
+		assertNotUnify(list(), atom("adam"));
+		// false.
+	}
+
+	function test_unify_should_unify_single_element_list_of_numbers_only_with_that_exact_literal() public {
+		// ?- [1] = [1].
+		assertUnify(list(1), list(1));
+		// true.
+
+		// ?- [1] = [].
+		assertNotUnify(list(1), list());
+		// false.
+
+		// ?- [1] = [2].
+		assertNotUnify(list(1), list(2));
+		// false.
+	}
+
+	function test_unify_should_unify_multi_element_list_of_numbers_only_with_that_exact_literal() public {
+		// ?- [1, 2] = [1, 2].
+		assertUnify(list(1, 2), list(1, 2));
+		// true.
+
+		// ?- [1, 2, 3] = [1, 2, 3].
+		assertUnify(list(1, 2, 3), list(1, 2, 3));
+		// true.
+
+		// ?- [1, 2] = [2, 1].
+		assertNotUnify(list(1, 2), list(2, 1));
+		// false.
+
+		// ?- [1, 2] = [1, 2, 3].
+		assertNotUnify(list(1, 2), list(1, 2, 3));
+		// false.
+	}
+
+	function test_unify_should_unify_list_of_atoms_only_with_that_exact_literal() public {
+		// ?- [adam, eve] = [adam, eve].
+		assertUnify(list(atom("adam"), atom("eve")), list(atom("adam"), atom("eve")));
+		// true.
+	}
+
+	function test_unify_should_unify_list_of_predicates_only_with_that_exact_literal() public {
+		// ?- [family(adam, eve), family(eve, paul)] = [family(adam, eve), family(eve, paul)].
+		assertUnify(list(family("adam", "eve"), family("eve", "paul")), list(family("adam", "eve"), family("eve", "paul")));
+		// true.
+	}
+
+	function test_unify_should_unify_list_of_lists_only_with_that_exact_literal() public {
+		// ?- [[1, 2], 3] = [[1, 2], 3].
+		assertUnify(list(list(1, 2), num(3)), list(list(1, 2), num(3)));
+		// true.
+
+		// ?- [[1, 2], 3] = [1, [2, 3]].
+		assertNotUnify(list(list(1, 2), num(3)), list(num(1), list(2, 3)));
+		// false.
+
+		// ?- [1, 2, 3] = [1, [2, [3]]].
+		assertNotUnify(list(1, 2, 3), list(num(1), list(num(2), list(3))));
+		// false.
+	}
+
+	function test_unify_should_unify_empty_list_with_variable() public {
+		// ?- [] = X.
+		assertUnify(list(), Var("X"));
+		// X = [].
+		assertSubstitution(Var("X"), list());
+	}
+
+	function test_unify_should_unify_list_with_variable() public {
+		// ?- X = [1, 2, 3].
+		assertUnify(Var("X"), list(1, 2, 3));
+		// X = [1, 2, 3].
+		assertSubstitution(Var("X"), list(1, 2, 3));
+	}
+
+	function test_unify_should_unify_empty_list_with_ignore() public {
+		// ?- [] = _.
+		assertUnify(list(), ignore());
+		// true.
+	}
+
+	function test_unify_should_unify_single_element_variable_list_with_literal_list() public {
+		// ?- [X] = [1].
+		assertUnify(list(Var("X")), list(1));
+		// X = 1.
+		assertSubstitution(Var("X"), num(1));
+	}
+
+	function test_unify_should_unify_multi_element_variable_list_with_literal_list() public {
+		// ?- [X, Y] = [1, 2].
+		assertUnify(list(Var("X"), Var("Y")), list(1, 2));
+		// X = 1,
+		// Y = 2.
+		assertSubstitution(Var("X"), num(1));
+		assertSubstitution(Var("Y"), num(2));
+	}
+
+	function test_unify_should_unify_multiple_instances_of_same_variable_on_the_list_with_same_literal() public {
+		// ?- [X, X] = [1, 1].
+		assertUnify(list(Var("X"), Var("X")), list(1, 1));
+		// X = 1.
+		assertSubstitution(Var("X"), num(1));
+	}
+
+	function test_unify_should_unify_variable_with_nested_list() public {
+		// ?- [[1, 2], Y] = [X, [3, 4]].
+		assertUnify(list(list(1, 2), Var("Y")), list(Var("X"), list(3, 4)));
+		// Y = [3, 4],
+		// X = [1, 2].
+		assertSubstitution(Var("Y"), list(3, 4));
+		assertSubstitution(Var("X"), list(1, 2));
+	}
+
+	function test_unify_should_not_unify_nested_variable_with_multiple_list_elements() public {
+		// ?- [X] = [1, 2].
+		assertNotUnify(list(Var("X")), list(1, 2));
+		// false.
+	}
+
+	function test_unify_should_unify_variable_with_list_containing_that_variable() public {
+		// ?- X = [X].
+		assertUnify(Var("X"), list(Var("X")));
+		// X = [X].
+		assertSubstitution(Var("X"), list(Var("X")));
+	}
+
+	function test_unify_should_not_unify_predicate_arguments_with_list_of_those_arguments() public {
+		// ?- family([adam, eve]) = family(adam, eve).
+		assertNotUnify(family(list(atom("adam"), atom("eve"))), family(atom("adam"), atom("eve")));
+		// false.
+	}
+
+	function test_unify_should_unify_ignore_with_list() public {
+		// ?- [_, _] = _.
+		assertUnify(list(ignore(), ignore()), ignore());
+		// true.
+	}
+
+	function test_unify_should_unify_ignore_with_list_element() public {
+		// ?- [1, 2] = [1, _].
+		assertUnify(list(1, 2), list(num(1), ignore()));
+		// true.
+	}
+
+	function test_unify_should_not_unify_ignore_with_multiple_list_elements() public {
+		// ?- [1, 2] = [_].
+		assertNotUnify(list(1, 2), list(ignore()));
+		// false.
 	}
 }
