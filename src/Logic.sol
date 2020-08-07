@@ -34,6 +34,13 @@ library Logic {
 		return keccak256(abi.encodePacked(_term.kind, _term.symbol, args));
 	}
 
+	function hashStorage(Term storage _term) internal view returns (bytes32) {
+		bytes32[] memory args = new bytes32[](_term.arguments.length);
+		for (uint i = 0; i < _term.arguments.length; ++i)
+			args[i] = hashStorage(_term.arguments[i]);
+		return keccak256(abi.encodePacked(_term.kind, _term.symbol, args));
+	}
+
 	function validate(Term memory _term) internal pure {
 		if (_term.kind == TermKind.Number || _term.kind == TermKind.Ignore || _term.kind == TermKind.Variable)
 			require(_term.arguments.length == 0);
