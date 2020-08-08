@@ -21,6 +21,11 @@ struct FrontendTerm {
 	FrontendTerm[] children;
 }
 
+struct FrontendRule {
+	FrontendTerm head;
+	FrontendTerm[] body;
+}
+
 struct Rule {
 	Term head;
 	Term[] body;
