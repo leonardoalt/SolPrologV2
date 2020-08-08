@@ -6,51 +6,51 @@ import "ds-test/test.sol";
 import "./Logic.sol";
 import "./Substitution.sol";
 
-contract EncoderTest is DSTest {
+contract EncoderTest is DSTest, TermBuilder {
 	Substitution.Info info;
 
 	using Substitution for Term;
 	using Substitution for Substitution.Info;
-	using TermBuilder for *;
+	using Logic for *;
 
 	function setUp() public {
 	}
 
 	function test_set_var_atom() public {
 		info.push();
-		Term memory x = bytes("X").term();
-		Term memory a = bytes("a").term();
+		Term memory x = atom("X");
+		Term memory a = atom("a");
 		x.set(a, info);
-		assertTrue(x.get(info).compareMemory(a));
+		assertTrue(x.get(info).termsEqualInMemory(a));
 		info.pop();
 	}
 
 	function test_set_ignore_var() public {
 		info.push();
-		Term memory x = bytes("_").term();
-		Term memory y = bytes("Y").term();
+		Term memory x = atom("_");
+		Term memory y = atom("Y");
 		x.set(y, info);
-		assertTrue(x.get(info).compareMemory(y));
+		assertTrue(x.get(info).termsEqualInMemory(y));
 		info.pop();
 	}
 
 	function test_set_var_var() public {
 		info.push();
-		Term memory x = bytes("X").term();
-		Term memory y = bytes("Y").term();
+		Term memory x = atom("X");
+		Term memory y = atom("Y");
 		x.set(y, info);
-		assertTrue(x.get(info).compareMemory(y));
+		assertTrue(x.get(info).termsEqualInMemory(y));
 		info.pop();
 	}
 
 	function test_set_var_pred() public {
 		info.push();
-		Term memory x = bytes("X").term();
-		Term memory p = bytes("p").term(2);
-		p.arguments[0] = bytes("a").term();
-		p.arguments[1] = bytes("b").term();
+		Term memory x = atom("X");
+		Term memory p = pred("p", 2);
+		p.arguments[0] = atom("a");
+		p.arguments[1] = atom("b");
 		x.set(p, info);
-		assertTrue(x.get(info).compareMemory(p));
+		assertTrue(x.get(info).termsEqualInMemory(p));
 		info.pop();
 	}
 
