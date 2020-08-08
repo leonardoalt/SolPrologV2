@@ -35,6 +35,35 @@ library Unification {
 		if (_term1.symbol != _term2.symbol)
 			return false;
 
+		if (_term1.kind == TermKind.List && _term2.kind == TermKind.ListHeadTail)
+			return unify(_term2, _term1, io_substitutions);
+
+		if (_term1.kind == TermKind.ListHeadTail && _term2.kind == TermKind.List) {
+			if (_term2.arguments.length < _term1.arguments.length - 1)
+				return false;
+
+			return
+				unifyArguments(0, _term1.arguments.length - 1, _term1, _term2, io_substitutions) &&
+				unify(
+					_term1.arguments[_term1.arguments.length - 1],
+					tail(_term1.arguments.length - 1, _term2),
+					io_substitutions
+				);
+		}
+
+		if (_term1.kind == TermKind.ListHeadTail && _term2.kind == TermKind.ListHeadTail) {
+			if (_term1.arguments.length > _term2.arguments.length)
+				return unify(_term2, _term1, io_substitutions);
+
+			return
+				unifyArguments(0, _term1.arguments.length - 1, _term1, _term2, io_substitutions) &&
+				unify(
+					_term1.arguments[_term1.arguments.length - 1],
+					extendedTailHT(_term1.arguments.length - 1, _term2),
+					io_substitutions
+				);
+		}
+
 		if (_term1.arguments.length != _term2.arguments.length)
 			return false;
 
@@ -58,6 +87,36 @@ library Unification {
 				return false;
 
 		return true;
+	}
+
+	function tail(uint _begin, Term memory _list) internal pure returns (Term memory) {
+		require(_list.kind == TermKind.List);
+		require(_begin <= _list.arguments.length);
+
+		Term memory listTail = Term(TermKind.List, 0, new Term[](_list.arguments.length - _begin));
+
+		for (uint i = _begin; i < _list.arguments.length; ++i)
+			listTail.arguments[i - _begin] = _list.arguments[i];
+
+		return listTail;
+	}
+
+	function extendedTailHT(uint _begin, Term memory _listHT) internal pure returns (Term memory) {
+		require(_listHT.kind == TermKind.ListHeadTail);
+		require(_begin <= _listHT.arguments.length - 1);
+
+		Term memory extendedTail = _listHT.arguments[_listHT.arguments.length - 1];
+		for (uint i = _listHT.arguments.length - 1; i > _begin; --i) {
+			// Shorten the head by putting one element in the tail.
+			// This relies on the fact that [X, Y|Z] = [X|[Y|Z]].
+
+			Term memory newTail = Term(TermKind.ListHeadTail, 0, new Term[](2));
+			newTail.arguments[0] = _listHT.arguments[i - 1];
+			newTail.arguments[1] = extendedTail;
+			extendedTail = newTail;
+		}
+
+		return extendedTail;
 	}
 
 	function reachableViaSubstitutionChain(

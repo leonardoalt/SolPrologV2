@@ -63,6 +63,27 @@ contract Fixtures is TermBuilder{
 	function list(uint _element1, uint _element2, uint _element3) internal pure returns (Term memory) {
 		return list(num(_element1), num(_element2), num(_element3));
 	}
+
+	function listHT(Term memory _headElement1, Term memory _tail) internal pure returns (Term memory) {
+		Term memory l = listHT(1, _tail);
+		l.arguments[0] = _headElement1;
+		return l;
+	}
+
+	function listHT(Term memory _headElement1, Term memory _headElement2, Term memory _tail) internal pure returns (Term memory) {
+		Term memory l = listHT(2, _tail);
+		l.arguments[0] = _headElement1;
+		l.arguments[1] = _headElement2;
+		return l;
+	}
+
+	function listHT(Term memory _headElement1, Term memory _headElement2, Term memory _headElement3, Term memory _tail) internal pure returns (Term memory) {
+		Term memory l = listHT(3, _tail);
+		l.arguments[0] = _headElement1;
+		l.arguments[1] = _headElement2;
+		l.arguments[2] = _headElement3;
+		return l;
+	}
 }
 
 
@@ -671,5 +692,269 @@ contract ListUnificationTest is UnificationTestBase {
 		// ?- [1, 2] = [_].
 		assertNotUnify(list(1, 2), list(ignore()));
 		// false.
+	}
+}
+
+
+contract ListHeadTailUnificationTest is UnificationTestBase {
+	function test_unify_should_unify_empty_list_in_tail_with_zero_elements() public {
+		// ?- [1|[]] = [1].
+		assertUnify(listHT(num(1), list()), list(1));
+		// true.
+	}
+
+	function test_unify_should_allow_tail_to_be_non_list_literal() public {
+		// ?- [1|2] = [1|2].
+		assertUnify(listHT(num(1), num(2)), listHT(num(1), num(2)));
+		// true.
+
+		// ?- [1|adam] = [1|adam].
+		assertUnify(listHT(num(1), atom("adam")), listHT(num(1), atom("adam")));
+		// true.
+
+		// ?- [1|family(adam, eve)] = [1|family(adam, eve)].
+		assertUnify(listHT(num(1), family("adam", "eve")), listHT(num(1), family("adam", "eve")));
+		// true.
+	}
+
+	function test_unify_should_unify_ignore_in_tail_with_any_number_of_elements() public {
+		// ?- [1|_] = [1].
+		assertUnify(listHT(num(1), ignore()), list(1));
+		// true.
+
+		// ?- [1|_] = [1, 2].
+		assertUnify(listHT(num(1), ignore()), list(1, 2));
+		// true.
+
+		// ?- [1|_] = [1, 2, 3].
+		assertUnify(listHT(num(1), ignore()), list(1, 2, 3));
+		// true.
+	}
+
+	function test_unify_should_unify_variable_in_tail_with_zero_elements() public {
+		// ?- [1|T] = [1].
+		assertUnify(listHT(num(1), Var("T")), list(1));
+		// T = [].
+		assertSubstitution(Var("T"), list());
+	}
+
+	function test_unify_should_unify_variable_in_tail_with_one_element() public {
+		// ?- [1|T] = [1, 2].
+		assertUnify(listHT(num(1), Var("T")), list(1, 2));
+		// T = [2].
+		assertSubstitution(Var("T"), list(2));
+	}
+
+	function test_unify_should_unify_variable_in_tail_with_two_elements() public {
+		// ?- [1|T] = [1, 2, 3].
+		assertUnify(listHT(num(1), Var("T")), list(1, 2, 3));
+		// T = [2, 3].
+		assertSubstitution(Var("T"), list(2, 3));
+	}
+
+	function test_unify_should_unify_list_in_tail() public {
+		// ?- [1|[2]] = [1, 2].
+		assertUnify(listHT(num(1), list(2)), list(1, 2));
+		// true.
+
+		// ?- [1|[2, 3]] = [1, 2, 3].
+		assertUnify(listHT(num(1), list(2, 3)), list(1, 2, 3));
+		// true.
+
+		// ?- [1|[2|[3]]] = [1, 2, 3].
+		assertUnify(listHT(num(1), listHT(num(2), list(3))), list(1, 2, 3));
+		// true.
+	}
+
+	function test_unify_should_unify_multiple_elements_in_head() public {
+		// ?- [1, 2|[3]] = [1, 2, 3].
+		assertUnify(listHT(num(1), num(2), list(3)), list(1, 2, 3));
+		// true.
+
+		// ?- [1, 2, 3|[]] = [1, 2, 3].
+		assertUnify(listHT(num(1), num(2), num(3), list()), list(1, 2, 3));
+		// true.
+	}
+
+	function test_unify_should_allow_any_literal_in_head() public {
+		// ?- [adam|[1]] = [adam, 1].
+		assertUnify(listHT(atom("adam"), list(1)), list(atom("adam"), num(1)));
+		// true.
+
+		// ?- [family(adam, eve)|[1]] = [family(adam, eve), 1].
+		assertUnify(listHT(family("adam", "eve"), list(1)), list(family("adam", "eve"), num(1)));
+		// true.
+
+		// ?- [[]|[1]] = [[], 1].
+		assertUnify(listHT(list(), list(1)), list(list(), num(1)));
+		// true.
+
+		// ?- [[1, 2, 3]|[]] = [[1, 2, 3]].
+		assertUnify(listHT(list(1, 2, 3), list()), list(list(1, 2, 3)));
+		// true.
+
+		// ?- [[1|[2]]|[3]] = [[1, 2], 3].
+		assertUnify(listHT(listHT(num(1), list(2)), list(3)), list(list(1, 2), num(3)));
+		// true.
+	}
+
+	function test_unify_should_unify_variable_in_head() public {
+		// ?- [H|[1]] = [adam, 1].
+		assertUnify(listHT(Var("H"), list(1)), list(atom("adam"), num(1)));
+		// H = adam.
+		assertSubstitution(Var("H"), atom("adam"));
+	}
+
+	function test_unify_should_unify_ignore_in_head() public {
+		// ?- [_|[1]] = [adam, 1].
+		assertUnify(listHT(ignore(), list(1)), list(atom("adam"), num(1)));
+		// true.
+	}
+
+	function test_unify_should_not_unify_head_tail_list_with_non_list_literal() public {
+		// ?- [H|T] = adam.
+		assertNotUnify(listHT(Var("H"), Var("T")), atom("adam"));
+		// false.
+
+		// ?- [H|T] = 1.
+		assertNotUnify(listHT(Var("H"), Var("T")), num(1));
+		// false.
+
+		// ?- [H|T] = family(adam, eve).
+		assertNotUnify(listHT(Var("H"), Var("T")), family("adam", "eve"));
+		// false.
+	}
+
+	function test_unify_should_unify_two_equivalent_head_tail_lists_with_different_heads() public {
+		// ?- [1, 2|[3]] = [1|[2, 3]].
+		assertUnify(listHT(num(1), num(2), list(3)), listHT(num(1), list(2, 3)));
+		// true.
+	}
+
+	function test_unify_should_unify_head_tail_lists_with_equivalent_list_with_two_tails() public {
+		// ?- [1, 2|3] = [1|[2|3]].
+		assertUnify(listHT(num(1), num(2), num(3)), listHT(num(1), listHT(num(2), num(3))));
+		// true.
+	}
+
+	function test_unify_should_unify_head_tail_lists_with_ignored_tails_only_if_heads_start_with_same_elements() public {
+		// ?- [1, 2|_] = [1, 2|_].
+		assertUnify(listHT(num(1), num(2), ignore()), listHT(num(1), num(2), ignore()));
+		// true.
+
+		// ?- [1, 2, 3|_] = [1, 2|_].
+		assertUnify(listHT(num(1), num(2), num(3), ignore()), listHT(num(1), num(2), ignore()));
+		// true.
+
+		// ?- [1, 2|_] = [1, 2, 3|_].
+		assertUnify(listHT(num(1), num(2), ignore()), listHT(num(1), num(2), num(3), ignore()));
+		// true.
+
+		// ?- [1, 3|_] = [1, 2, 3|_].
+		assertNotUnify(listHT(num(1), num(3), ignore()), listHT(num(1), num(2), num(3), ignore()));
+		// false.
+	}
+
+	function test_unify_should_unify_head_tail_list_with_variable() public {
+		// ?- [H|T] = X.
+		assertUnify(listHT(Var("H"), Var("T")), Var("X"));
+		// X = [H|T].
+		assertSubstitution(Var("X"), listHT(Var("H"), Var("T")));
+		assertNoSubstitution(Var("H"));
+		assertNoSubstitution(Var("T"));
+	}
+
+	function test_unify_should_unify_head_tail_list_with_ignore() public {
+		// ?- [H|T] = _.
+		assertUnify(listHT(Var("H"), Var("T")), ignore());
+		// true.
+		assertNoSubstitution(Var("H"));
+		assertNoSubstitution(Var("T"));
+	}
+
+	function test_unify_should_unify_head_tail_list_containing_one_variable() public {
+		// ?- [H|T] = [X].
+		assertUnify(listHT(Var("H"), Var("T")), list(Var("X")));
+		// H = X,
+		// T = [].
+		assertSubstitution(Var("H"), Var("X"));
+		assertSubstitution(Var("T"), list());
+		assertNoSubstitution(Var("X"));
+	}
+
+	function test_unify_should_unify_head_tail_list_containing_two_variables() public {
+		// ?- [H|T] = [X, Y].
+		assertUnify(listHT(Var("H"), Var("T")), list(Var("X"), Var("Y")));
+		// H = X,
+		// T = [Y].
+		assertSubstitution(Var("H"), Var("X"));
+		assertSubstitution(Var("T"), list(Var("Y")));
+		assertNoSubstitution(Var("X"));
+		assertNoSubstitution(Var("Y"));
+	}
+
+	function test_unify_should_unify_head_tail_list_containing_variable_and_list_of_variables() public {
+		// ?- [H|T] = [X, [Y]].
+		assertUnify(listHT(Var("H"), Var("T")), list(Var("X"), list(Var("Y"))));
+		// H = X,
+		// T = [[Y]].
+		assertSubstitution(Var("H"), Var("X"));
+		assertSubstitution(Var("T"), list(list(Var("Y"))));
+		assertNoSubstitution(Var("X"));
+		assertNoSubstitution(Var("Y"));
+	}
+
+	function test_unify_should_unify_head_tail_list_with_head_tail_list() public {
+		// ?- [H|T] = [X|Y].
+		assertUnify(listHT(Var("H"), Var("T")), listHT(Var("X"), Var("Y")));
+		// H = X,
+		// T = Y.
+		assertSubstitution(Var("H"), Var("X"));
+		assertSubstitution(Var("T"), Var("Y"));
+		assertNoSubstitution(Var("X"));
+		assertNoSubstitution(Var("Y"));
+	}
+
+	function test_unify_should_unify_head_with_tail_and_tail_with_head() public {
+		// ?- [H|T] = [T|H].
+		assertUnify(listHT(Var("H"), Var("T")), listHT(Var("T"), Var("H")));
+		// H = T.
+		assertSubstitution(Var("H"), Var("T"));
+		assertNoSubstitution(Var("T"));
+	}
+
+	function test_unify_should_unify_head_with_tail_and_tail_with_list_containing_head() public {
+		// ?- [H|T] = [T|[H]].
+		assertUnify(listHT(Var("H"), Var("T")), listHT(Var("T"), list(Var("H"))));
+		// H = T,
+		// T = [H],
+		// NOTE: SWI Prolog answers H = T, T = [T].
+		assertSubstitution(Var("H"), Var("T"));
+		assertSubstitution(Var("T"), list(Var("H")));
+	}
+
+	function test_unify_should_not_unify_head_tail_list_with_empty_list() public {
+		// ?- [H|T] = [].
+		assertNotUnify(listHT(Var("H"), Var("T")), list());
+		// false.
+	}
+
+	function test_unify_should_not_unify_head_tail_list_with_two_element_head_with_one_element_list() public {
+		// ?- [H1, H2|T] = [X].
+		assertNotUnify(listHT(Var("H1"), Var("H2"), Var("T")), list(Var("X")));
+		// false.
+	}
+
+	function test_unify_should_unify_head_tail_list_with_two_element_head_with_two_element_list() public {
+		// ?- [H1, H2|T] = [X, Y].
+		assertUnify(listHT(Var("H1"), Var("H2"), Var("T")), list(Var("X"), Var("Y")));
+		// H1 = X,
+		// H2 = Y,
+		// T = [],
+		assertSubstitution(Var("H1"), Var("X"));
+		assertSubstitution(Var("H2"), Var("Y"));
+		assertSubstitution(Var("T"), list());
+		assertNoSubstitution(Var("X"));
+		assertNoSubstitution(Var("Y"));
 	}
 }
