@@ -48,6 +48,8 @@ library Logic {
 			// NOTE: Ignore can't use symbol == 0 because it would then be indistinguishable from
 			// uninitialized memory.
 			require(_term.symbol == 1);
+		else if (_term.kind == TermKind.Predicate)
+			require(_term.symbol != 0);
 	}
 
 	function isEmptyMemory(Term memory _term) internal pure returns (bool) {
