@@ -128,6 +128,41 @@ contract TermBuilder {
 		t.kind = TermKind.List;
 	}
 
+	function list(Term memory _element1) internal pure returns (Term memory) {
+		Term memory l = list();
+		l.arguments = new Term[](1);
+		l.arguments[0] = _element1;
+		return l;
+	}
+
+	function list(Term memory _element1, Term memory _element2) internal pure returns (Term memory) {
+		Term memory l = list();
+		l.arguments = new Term[](2);
+		l.arguments[0] = _element1;
+		l.arguments[1] = _element2;
+		return l;
+	}
+
+	function list(Term memory _element1, Term memory _element2, Term memory _element3) internal pure returns (Term memory) {
+		Term memory l = list();
+		l.arguments = new Term[](3);
+		l.arguments[0] = _element1;
+		l.arguments[1] = _element2;
+		l.arguments[2] = _element3;
+		return l;
+	}
+
+	function list(uint _element1) internal pure returns (Term memory) {
+		return list(num(_element1));
+	}
+
+	function list(uint _element1, uint _element2) internal pure returns (Term memory) {
+		return list(num(_element1), num(_element2));
+	}
+
+	function list(uint _element1, uint _element2, uint _element3) internal pure returns (Term memory) {
+		return list(num(_element1), num(_element2), num(_element3));
+	}
 	function listHT() internal pure returns (Term memory t) {
 		t.kind = TermKind.ListHeadTail;
 	}
@@ -138,6 +173,27 @@ contract TermBuilder {
 		t = listHT();
 		t.arguments = new Term[](_headElementCount + 1);
 		t.arguments[_headElementCount] = _tail;
+	}
+
+	function listHT(Term memory _headElement1, Term memory _tail) internal pure returns (Term memory) {
+		Term memory l = listHT(1, _tail);
+		l.arguments[0] = _headElement1;
+		return l;
+	}
+
+	function listHT(Term memory _headElement1, Term memory _headElement2, Term memory _tail) internal pure returns (Term memory) {
+		Term memory l = listHT(2, _tail);
+		l.arguments[0] = _headElement1;
+		l.arguments[1] = _headElement2;
+		return l;
+	}
+
+	function listHT(Term memory _headElement1, Term memory _headElement2, Term memory _headElement3, Term memory _tail) internal pure returns (Term memory) {
+		Term memory l = listHT(3, _tail);
+		l.arguments[0] = _headElement1;
+		l.arguments[1] = _headElement2;
+		l.arguments[2] = _headElement3;
+		return l;
 	}
 
 	function atom(bytes memory _symbol) internal pure returns (Term memory t) {

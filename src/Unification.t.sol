@@ -27,63 +27,6 @@ contract Fixtures is TermBuilder{
 	function family(Term memory _member1, Term memory _member2, Term memory _member3) internal pure returns (Term memory) {
 		return pred("family", _member1, _member2, _member3);
 	}
-
-	function list(Term memory _element1) internal pure returns (Term memory) {
-		Term memory l = list();
-		l.arguments = new Term[](1);
-		l.arguments[0] = _element1;
-		return l;
-	}
-
-	function list(Term memory _element1, Term memory _element2) internal pure returns (Term memory) {
-		Term memory l = list();
-		l.arguments = new Term[](2);
-		l.arguments[0] = _element1;
-		l.arguments[1] = _element2;
-		return l;
-	}
-
-	function list(Term memory _element1, Term memory _element2, Term memory _element3) internal pure returns (Term memory) {
-		Term memory l = list();
-		l.arguments = new Term[](3);
-		l.arguments[0] = _element1;
-		l.arguments[1] = _element2;
-		l.arguments[2] = _element3;
-		return l;
-	}
-
-	function list(uint _element1) internal pure returns (Term memory) {
-		return list(num(_element1));
-	}
-
-	function list(uint _element1, uint _element2) internal pure returns (Term memory) {
-		return list(num(_element1), num(_element2));
-	}
-
-	function list(uint _element1, uint _element2, uint _element3) internal pure returns (Term memory) {
-		return list(num(_element1), num(_element2), num(_element3));
-	}
-
-	function listHT(Term memory _headElement1, Term memory _tail) internal pure returns (Term memory) {
-		Term memory l = listHT(1, _tail);
-		l.arguments[0] = _headElement1;
-		return l;
-	}
-
-	function listHT(Term memory _headElement1, Term memory _headElement2, Term memory _tail) internal pure returns (Term memory) {
-		Term memory l = listHT(2, _tail);
-		l.arguments[0] = _headElement1;
-		l.arguments[1] = _headElement2;
-		return l;
-	}
-
-	function listHT(Term memory _headElement1, Term memory _headElement2, Term memory _headElement3, Term memory _tail) internal pure returns (Term memory) {
-		Term memory l = listHT(3, _tail);
-		l.arguments[0] = _headElement1;
-		l.arguments[1] = _headElement2;
-		l.arguments[2] = _headElement3;
-		return l;
-	}
 }
 
 
@@ -266,6 +209,13 @@ contract VariableUnificationTest is UnificationTestBase {
 		assertSubstitution(Var("X"), atom("adam"));
 	}
 
+	function test_unify_should_unify_variable_inside_predicate_right() public {
+		// ?- family(adam, paul) = family(X, paul).
+		assertUnify(family("adam", "paul"), family(Var("X"), atom("paul")));
+		// X = adam.
+		assertSubstitution(Var("X"), atom("adam"));
+	}
+
 	function test_unify_should_find_substitutions_for_variables_on_both_sides() public {
 		// ?- family(X, paul) = family(adam, Y).
 		assertUnify(family(Var("X"), atom("paul")), family(atom("adam"), Var("Y")));
@@ -291,6 +241,15 @@ contract VariableUnificationTest is UnificationTestBase {
 		assertSubstitution(Var("Y"), atom("paul"));
 	}
 
+	function test_unify_should_unify_multiple_variables_inside_predicate_right() public {
+		// ?- family(adam, paul) = family(X, Y).
+		assertUnify(family("adam", "paul"), family(Var("X"), Var("Y")));
+		// X = adam,
+		// Y = paul.
+		assertSubstitution(Var("X"), atom("adam"));
+		assertSubstitution(Var("Y"), atom("paul"));
+	}
+
 	function test_unify_should_unify_same_variable_with_multiple_instances_of_same_atom() public {
 		// ?- family(X, X) = family(adam, adam).
 		assertUnify(family(Var("X"), Var("X")), family("adam", "adam"));
@@ -298,9 +257,22 @@ contract VariableUnificationTest is UnificationTestBase {
 		assertSubstitution(Var("X"), atom("adam"));
 	}
 
+	function test_unify_should_unify_same_variable_with_multiple_instances_of_same_atom_right() public {
+		// ?- family(adam, adam) = family(X, X).
+		assertUnify(family("adam", "adam"), family(Var("X"), Var("X")));
+		// X = adam.
+		assertSubstitution(Var("X"), atom("adam"));
+	}
+
 	function test_unify_should_not_unify_same_variable_with_different_atoms() public {
 		// ?- family(X, X) = family(adam, paul).
 		assertNotUnify(family(Var("X"), Var("X")), family("adam", "paul"));
+		// false.
+	}
+
+	function test_unify_should_not_unify_same_variable_with_different_atoms_right() public {
+		// ?- family(adam, paul) = family(X, X).
+		assertNotUnify(family("adam", "paul"), family(Var("X"), Var("X")));
 		// false.
 	}
 
@@ -707,6 +679,10 @@ contract ListHeadTailUnificationTest is UnificationTestBase {
 		// ?- [1|2] = [1|2].
 		assertUnify(listHT(num(1), num(2)), listHT(num(1), num(2)));
 		// true.
+
+		// ?- [1|2] = [1,2].
+		assertNotUnify(listHT(num(1), num(2)), list(num(1), num(2)));
+		// false.
 
 		// ?- [1|adam] = [1|adam].
 		assertUnify(listHT(num(1), atom("adam")), listHT(num(1), atom("adam")));
