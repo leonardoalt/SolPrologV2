@@ -18,11 +18,7 @@ library Substitution {
 	}
 
 	function set(Term storage _to, Term memory _from) internal {
-		_to.kind = _from.kind;
-		_to.symbol = _from.symbol;
-		delete _to.arguments;
-		for (uint i = 0; i < _from.arguments.length; ++i)
-			set(_to.arguments.push(), _from.arguments[i]);
+		fromMemory(_to, _from);
 	}
 
 	function get(Term memory _term, Info storage _info) internal view returns (Term memory) {

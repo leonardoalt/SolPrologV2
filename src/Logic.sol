@@ -106,6 +106,14 @@ library Logic {
 
 		return output;
 	}
+
+	function fromMemory(Term storage _to, Term memory _from) internal {
+		_to.kind = _from.kind;
+		_to.symbol = _from.symbol;
+		delete _to.arguments;
+		for (uint i = 0; i < _from.arguments.length; ++i)
+			fromMemory(_to.arguments.push(), _from.arguments[i]);
+	}
 }
 
 contract TermBuilder {
