@@ -32,10 +32,10 @@ struct Rule {
 }
 
 library Logic {
-	function hash(Term memory _term) internal pure returns (bytes32) {
+	function hashMemory(Term memory _term) internal pure returns (bytes32) {
 		bytes32[] memory args = new bytes32[](_term.arguments.length);
 		for (uint i = 0; i < _term.arguments.length; ++i)
-			args[i] = hash(_term.arguments[i]);
+			args[i] = hashMemory(_term.arguments[i]);
 		return keccak256(abi.encodePacked(_term.kind, _term.symbol, args));
 	}
 
@@ -72,37 +72,37 @@ library Logic {
 		return _term.kind == TermKind.Ignore && _term.symbol == 0 && _term.arguments.length == 0;
 	}
 
-	function termsEqualInMemory(Term memory _term1, Term memory _term2) internal view returns (bool) {
+	function equalsMemory(Term memory _term1, Term memory _term2) internal view returns (bool) {
 		if (_term1.kind != _term2.kind || _term1.symbol != _term2.symbol || _term1.arguments.length != _term2.arguments.length)
 			return false;
 
 		for (uint i = 0; i < _term1.arguments.length; ++i)
-			if (!termsEqualInMemory(_term1.arguments[i], _term2.arguments[i]))
+			if (!equalsMemory(_term1.arguments[i], _term2.arguments[i]))
 				return false;
 
 		return true;
 	}
 
-	function termsEqualInStorage(Term storage _term1, Term memory _term2) internal view returns (bool) {
+	function equalsStorage(Term storage _term1, Term memory _term2) internal view returns (bool) {
 		if (_term1.kind != _term2.kind || _term1.symbol != _term2.symbol || _term1.arguments.length != _term2.arguments.length)
 			return false;
 
 		for (uint i = 0; i < _term1.arguments.length; ++i)
-			if (!termsEqualInStorage(_term1.arguments[i], _term2.arguments[i]))
+			if (!equalsStorage(_term1.arguments[i], _term2.arguments[i]))
 				return false;
 
 		return true;
 	}
 
-	function copyToMemory(Term storage _input) internal returns (Term memory){
+	function toMemory(Term storage _from) internal returns (Term memory) {
 		Term memory output = Term({
-			kind: _input.kind,
-			symbol: _input.symbol,
-			arguments: new Term[](_input.arguments.length)
+			kind: _from.kind,
+			symbol: _from.symbol,
+			arguments: new Term[](_from.arguments.length)
 		});
 
-		for (uint i = 0; i < _input.arguments.length; ++i)
-			output.arguments[i] = copyToMemory(_input.arguments[i]);
+		for (uint i = 0; i < _from.arguments.length; ++i)
+			output.arguments[i] = toMemory(_from.arguments[i]);
 
 		return output;
 	}

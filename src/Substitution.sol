@@ -4,6 +4,8 @@ pragma solidity ^0.6.7;
 import './Logic.sol';
 
 library Substitution {
+	using Logic for Term;
+
 	struct Info {
 		mapping (uint => mapping (bytes32 => Term)) frames;
 		uint[][] usedKeys;
@@ -11,18 +13,18 @@ library Substitution {
 
 	function set(Term memory _term1, Term memory _term2, Info storage _info) internal {
 		assert(_info.usedKeys.length > 0);
-		bytes32 hash = Logic.hash(_term1);
+		bytes32 hash = _term1.hashMemory();
 		uint frame = _info.usedKeys.length - 1;
 		set(_info.frames[frame][hash], _term2);
 		_info.usedKeys[frame].push(uint(hash));
 	}
 
 	function set(Term storage _to, Term memory _from) internal {
-		fromMemory(_to, _from);
+		_to.fromMemory(_from);
 	}
 
 	function get(Term memory _term, Info storage _info) internal view returns (Term memory) {
-		bytes32 hash = Logic.hash(_term);
+		bytes32 hash = _term.hashMemory();
 		uint frame = _info.usedKeys.length - 1;
 		return _info.frames[frame][hash];
 	}
