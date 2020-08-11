@@ -123,3 +123,30 @@ contract TermBuilder {
 		return p;
 	}
 }
+
+library RuleBuilder {
+	using Logic for Term;
+
+	function add(Rule[] storage _rules, Term memory _head) internal {
+		_rules.push();
+		_rules[_rules.length - 1].head.fromMemory(_head);
+	}
+
+	function add(Rule[] storage _rules, Term memory _head, Term memory _body1) internal {
+		add(_rules, _head);
+		_rules[_rules.length - 1].body.push().fromMemory(_body1);
+	}
+
+	function add(Rule[] storage _rules, Term memory _head, Term memory _body1, Term memory _body2) internal {
+		add(_rules, _head);
+		_rules[_rules.length - 1].body.push().fromMemory(_body1);
+		_rules[_rules.length - 1].body.push().fromMemory(_body2);
+	}
+
+	function add(Rule[] storage _rules, Term memory _head, Term memory _body1, Term memory _body2, Term memory _body3) internal {
+		add(_rules, _head);
+		_rules[_rules.length - 1].body.push().fromMemory(_body1);
+		_rules[_rules.length - 1].body.push().fromMemory(_body2);
+		_rules[_rules.length - 1].body.push().fromMemory(_body3);
+	}
+}
