@@ -4,6 +4,7 @@ pragma solidity ^0.6.7;
 import "ds-test/test.sol";
 
 import "./Unification.sol";
+import "./Builder.sol";
 import "./Logic.sol";
 
 
@@ -31,6 +32,8 @@ contract Fixtures is TermBuilder{
 
 
 contract UnificationTestBase is DSTest, TermBuilder, Fixtures {
+	using Logic for Term;
+
 	mapping(bytes32 => Term) substitutions;
 
 	function setUp() public {
@@ -49,14 +52,14 @@ contract UnificationTestBase is DSTest, TermBuilder, Fixtures {
 		Logic.validate(_to);
 		Logic.validate(_from);
 
-		assert(Logic.termsEqualInStorage(substitutions[Logic.hash(_to)], _from));
+		assert(substitutions[_to.hashMemory()].equalsStorage(_from));
 	}
 
 	function assertNoSubstitution(Term memory _to) internal view {
 		require(_to.kind == TermKind.Variable);
 		Logic.validate(_to);
 
-		assert(Logic.isEmptyStorage(substitutions[Logic.hash(_to)]));
+		assert(substitutions[_to.hashMemory()].isEmptyStorage());
 	}
 }
 

@@ -5,6 +5,7 @@ import './Logic.sol';
 import './Substitution.sol';
 
 library Unification {
+	using Logic for Term;
 
 	function unify(
 		Term memory _term1,
@@ -18,10 +19,10 @@ library Unification {
 		if (_term1.kind == TermKind.Ignore || _term2.kind == TermKind.Ignore)
 			return true;
 
-		bytes32 hash1 = Logic.hash(_term1);
+		bytes32 hash1 = _term1.hashMemory();
 		if (_term1.kind == TermKind.Variable) {
 			if (!Logic.isEmptyStorage(io_substitutions[hash1]))
-				return unify(Logic.copyToMemory(io_substitutions[hash1]), _term2, io_substitutions);
+				return unify(io_substitutions[hash1].toMemory(), _term2, io_substitutions);
 
 			if (!reachableViaSubstitutionChain(_term2, _term1, io_substitutions))
 				Substitution.set(io_substitutions[hash1], _term2);
@@ -125,12 +126,12 @@ library Unification {
 		mapping(bytes32 => Term) storage _substitutions
 	) private view returns (bool) {
 
-		if (Logic.termsEqualInMemory(_origin, _target))
+		if (_origin.equalsMemory(_target))
 			return true;
 
-		bytes32 currentHash = Logic.hash(_origin);
-		while (!Logic.isEmptyStorage(_substitutions[currentHash]) && !Logic.termsEqualInStorage(_substitutions[currentHash], _target))
-			currentHash = Logic.hashStorage(_substitutions[currentHash]);
+		bytes32 currentHash = _origin.hashMemory();
+		while (!Logic.isEmptyStorage(_substitutions[currentHash]) && !_substitutions[currentHash].equalsStorage(_target))
+			currentHash =_substitutions[currentHash].hashStorage();
 
 		return !Logic.isEmptyStorage(_substitutions[currentHash]);
 	}

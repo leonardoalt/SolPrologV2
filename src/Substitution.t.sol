@@ -4,6 +4,7 @@ pragma solidity ^0.6.7;
 import "ds-test/test.sol";
 
 import "./Logic.sol";
+import "./Builder.sol";
 import "./Substitution.sol";
 
 contract EncoderTest is DSTest, TermBuilder {
@@ -21,7 +22,7 @@ contract EncoderTest is DSTest, TermBuilder {
 		Term memory x = atom("X");
 		Term memory a = atom("a");
 		x.set(a, info);
-		assertTrue(x.get(info).termsEqualInMemory(a));
+		assertTrue(x.get(info).equalsMemory(a));
 		info.pop();
 	}
 
@@ -30,7 +31,7 @@ contract EncoderTest is DSTest, TermBuilder {
 		Term memory x = atom("_");
 		Term memory y = atom("Y");
 		x.set(y, info);
-		assertTrue(x.get(info).termsEqualInMemory(y));
+		assertTrue(x.get(info).equalsMemory(y));
 		info.pop();
 	}
 
@@ -39,7 +40,7 @@ contract EncoderTest is DSTest, TermBuilder {
 		Term memory x = atom("X");
 		Term memory y = atom("Y");
 		x.set(y, info);
-		assertTrue(x.get(info).termsEqualInMemory(y));
+		assertTrue(x.get(info).equalsMemory(y));
 		info.pop();
 	}
 
@@ -50,7 +51,7 @@ contract EncoderTest is DSTest, TermBuilder {
 		p.arguments[0] = atom("a");
 		p.arguments[1] = atom("b");
 		x.set(p, info);
-		assertTrue(x.get(info).termsEqualInMemory(p));
+		assertTrue(x.get(info).equalsMemory(p));
 		info.pop();
 	}
 
