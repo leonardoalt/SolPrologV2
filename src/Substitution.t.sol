@@ -4,6 +4,7 @@ pragma solidity ^0.6.7;
 import "ds-test/test.sol";
 
 import "./Logic.sol";
+import "./Builder.sol";
 import "./Substitution.sol";
 
 contract EncoderTest is DSTest, TermBuilder {
