@@ -8,15 +8,15 @@ import "./Prolog.sol";
 contract PrologTest is DSTest {
 	Prolog prolog;
 
-    function setUp() public {
-        prolog = new Prolog();
-    }
+	function setUp() public {
+		prolog = new Prolog();
+	}
 
-    function testFail_basic_sanity() public {
-        assertTrue(false);
-    }
+	function testFail_basic_sanity() public {
+		assertTrue(false);
+	}
 
-    function test_basic_sanity() public {
-        assertTrue(true);
-    }
+	function test_basic_sanity() public {
+		assertTrue(true);
+	}
 }
