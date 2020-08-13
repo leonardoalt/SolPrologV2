@@ -43,6 +43,8 @@ library Substitution {
 	}
 
 	function pop(Info storage _info) internal {
+		require(_info.usedKeys.length > 0);
+
 		uint frame = _info.usedKeys.length - 1;
 		for (uint i = 0; i < _info.usedKeys[frame].length; ++i)
 			delete _info.frames[frame][bytes32(_info.usedKeys[frame][i])];
