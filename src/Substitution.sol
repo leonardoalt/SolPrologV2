@@ -12,21 +12,30 @@ library Substitution {
 	}
 
 	function set(Info storage _info, Term memory _term1, Term memory _term2) internal {
-		assert(_info.usedKeys.length > 0);
-		bytes32 hash = _term1.hashMemory();
+		set(_info, _term1.hashMemory(), _term2);
+	}
+
+	function set(Info storage _info, bytes32 _hash, Term memory _term) internal {
+		require(_info.usedKeys.length > 0);
+
 		uint frame = _info.usedKeys.length - 1;
-		set(_info.frames[frame][hash], _term2);
-		_info.usedKeys[frame].push(uint(hash));
+		set(_info.frames[frame][_hash], _term);
+		_info.usedKeys[frame].push(uint(_hash));
 	}
 
 	function set(Term storage _to, Term memory _from) internal {
 		_to.fromMemory(_from);
 	}
 
-	function get(Info storage _info, Term memory _term) internal view returns (Term memory) {
-		bytes32 hash = _term.hashMemory();
+	function get(Info storage _info, bytes32 _hash) internal view returns (Term memory) {
+		require(_info.usedKeys.length > 0);
+
 		uint frame = _info.usedKeys.length - 1;
-		return _info.frames[frame][hash];
+		return _info.frames[frame][_hash];
+	}
+
+	function get(Info storage _info, Term memory _term) internal view returns (Term memory) {
+		return get(_info, _term.hashMemory());
 	}
 
 	function push(Info storage _info) internal {
