@@ -4,11 +4,12 @@ pragma solidity ^0.6.7;
 import "ds-test/test.sol";
 
 import "./Unification.sol";
+import "./Substitution.sol";
 import "./Builder.sol";
 import "./Logic.sol";
 
 
-contract Fixtures is TermBuilder{
+contract Fixtures is TermBuilder {
 	function family(bytes memory _memberName1) internal pure returns (Term memory) {
 		return pred("family", atom(_memberName1));
 	}
@@ -33,10 +34,12 @@ contract Fixtures is TermBuilder{
 
 contract UnificationTestBase is DSTest, TermBuilder, Fixtures {
 	using Logic for Term;
+	using Substitution for Substitution.Info;
 
-	mapping(bytes32 => Term) substitutions;
+	Substitution.Info substitutions;
 
 	function setUp() public {
+		substitutions.push();
 	}
 
 	function assertUnify(Term memory _term1, Term memory _term2) internal {
@@ -52,14 +55,15 @@ contract UnificationTestBase is DSTest, TermBuilder, Fixtures {
 		Logic.validate(_to);
 		Logic.validate(_from);
 
-		assert(substitutions[_to.hashMemory()].equalsStorage(_from));
+		assert(substitutions.usedKeys.length > 0);
+		assert(substitutions.get(_to).equalsMemory(_from));
 	}
 
 	function assertNoSubstitution(Term memory _to) internal view {
 		require(_to.kind == TermKind.Variable);
 		Logic.validate(_to);
 
-		assert(substitutions[_to.hashMemory()].isEmptyStorage());
+		assert(substitutions.usedKeys.length == 0 || substitutions.get(_to).isEmptyMemory());
 	}
 }
 
