@@ -11,7 +11,7 @@ library Substitution {
 		uint[][] usedKeys;
 	}
 
-	function set(Term memory _term1, Term memory _term2, Info storage _info) internal {
+	function set(Info storage _info, Term memory _term1, Term memory _term2) internal {
 		assert(_info.usedKeys.length > 0);
 		bytes32 hash = _term1.hashMemory();
 		uint frame = _info.usedKeys.length - 1;
@@ -23,7 +23,7 @@ library Substitution {
 		_to.fromMemory(_from);
 	}
 
-	function get(Term memory _term, Info storage _info) internal view returns (Term memory) {
+	function get(Info storage _info, Term memory _term) internal view returns (Term memory) {
 		bytes32 hash = _term.hashMemory();
 		uint frame = _info.usedKeys.length - 1;
 		return _info.frames[frame][hash];
