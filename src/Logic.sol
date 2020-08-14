@@ -114,4 +114,11 @@ library Logic {
 		for (uint i = 0; i < _from.arguments.length; ++i)
 			fromMemory(_to.arguments.push(), _from.arguments[i]);
 	}
+
+	function fromMemory(Rule storage o_to, Rule memory _from) internal {
+		fromMemory(o_to.head, _from.head);
+
+		for (uint i = 0; i < _from.body.length; ++i)
+			fromMemory(o_to.body[i], _from.body[i]);
+	}
 }

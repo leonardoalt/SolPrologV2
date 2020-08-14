@@ -125,7 +125,7 @@ library Unification {
 		Term memory _origin,
 		Term memory _target,
 		Substitution.Info storage _substitutions
-	) private view returns (bool) {
+	) internal view returns (bool) {
 
 		if (_origin.equalsMemory(_target))
 			return true;
