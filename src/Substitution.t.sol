@@ -21,8 +21,8 @@ contract EncoderTest is DSTest, TermBuilder {
 		info.push();
 		Term memory x = atom("X");
 		Term memory a = atom("a");
-		x.set(a, info);
-		assertTrue(x.get(info).equalsMemory(a));
+		info.set(x, a);
+		assertTrue(info.get(x).equalsMemory(a));
 		info.pop();
 	}
 
@@ -30,8 +30,8 @@ contract EncoderTest is DSTest, TermBuilder {
 		info.push();
 		Term memory x = atom("_");
 		Term memory y = atom("Y");
-		x.set(y, info);
-		assertTrue(x.get(info).equalsMemory(y));
+		info.set(x, y);
+		assertTrue(info.get(x).equalsMemory(y));
 		info.pop();
 	}
 
@@ -39,8 +39,8 @@ contract EncoderTest is DSTest, TermBuilder {
 		info.push();
 		Term memory x = atom("X");
 		Term memory y = atom("Y");
-		x.set(y, info);
-		assertTrue(x.get(info).equalsMemory(y));
+		info.set(x, y);
+		assertTrue(info.get(x).equalsMemory(y));
 		info.pop();
 	}
 
@@ -50,8 +50,8 @@ contract EncoderTest is DSTest, TermBuilder {
 		Term memory p = pred("p", 2);
 		p.arguments[0] = atom("a");
 		p.arguments[1] = atom("b");
-		x.set(p, info);
-		assertTrue(x.get(info).equalsMemory(p));
+		info.set(x, p);
+		assertTrue(info.get(x).equalsMemory(p));
 		info.pop();
 	}
 

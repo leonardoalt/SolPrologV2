@@ -6,11 +6,12 @@ import './Substitution.sol';
 
 library Unification {
 	using Logic for Term;
+	using Substitution for Substitution.Info;
 
 	function unify(
 		Term memory _term1,
 		Term memory _term2,
-		mapping(bytes32 => Term) storage io_substitutions
+		Substitution.Info storage io_substitutions
 	) internal returns (bool) {
 
 		Logic.validate(_term1);
@@ -21,11 +22,11 @@ library Unification {
 
 		bytes32 hash1 = _term1.hashMemory();
 		if (_term1.kind == TermKind.Variable) {
-			if (!Logic.isEmptyStorage(io_substitutions[hash1]))
-				return unify(io_substitutions[hash1].toMemory(), _term2, io_substitutions);
+			if (!Logic.isEmptyMemory(io_substitutions.get(hash1)))
+				return unify(io_substitutions.get(hash1), _term2, io_substitutions);
 
 			if (!reachableViaSubstitutionChain(_term2, _term1, io_substitutions))
-				Substitution.set(io_substitutions[hash1], _term2);
+				io_substitutions.set(hash1, _term2);
 
 			return true;
 		}
@@ -76,7 +77,7 @@ library Unification {
 		uint _end,
 		Term memory _term1,
 		Term memory _term2,
-		mapping(bytes32 => Term) storage io_substitutions
+		Substitution.Info storage io_substitutions
 	) private returns (bool) {
 
 		require(_begin <= _end);
@@ -123,16 +124,16 @@ library Unification {
 	function reachableViaSubstitutionChain(
 		Term memory _origin,
 		Term memory _target,
-		mapping(bytes32 => Term) storage _substitutions
+		Substitution.Info storage _substitutions
 	) private view returns (bool) {
 
 		if (_origin.equalsMemory(_target))
 			return true;
 
 		bytes32 currentHash = _origin.hashMemory();
-		while (!Logic.isEmptyStorage(_substitutions[currentHash]) && !_substitutions[currentHash].equalsStorage(_target))
-			currentHash =_substitutions[currentHash].hashStorage();
+		while (!Logic.isEmptyMemory(_substitutions.get(currentHash)) && !_substitutions.get(currentHash).equalsMemory(_target))
+			currentHash =_substitutions.get(currentHash).hashMemory();
 
-		return !Logic.isEmptyStorage(_substitutions[currentHash]);
+		return !Logic.isEmptyMemory(_substitutions.get(currentHash));
 	}
 }
