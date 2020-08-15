@@ -22,7 +22,7 @@ library Unification {
 
 		bytes32 hash1 = _term1.hashMemory();
 		if (_term1.kind == TermKind.Variable) {
-			if (!Logic.isEmptyMemory(io_substitutions.get(hash1)))
+			if (!io_substitutions.get(hash1).isEmptyMemory())
 				return unify(io_substitutions.get(hash1), _term2, io_substitutions);
 
 			if (!reachableViaSubstitutionChain(_term2, _term1, io_substitutions))
@@ -131,9 +131,9 @@ library Unification {
 			return true;
 
 		bytes32 currentHash = _origin.hashMemory();
-		while (!Logic.isEmptyMemory(_substitutions.get(currentHash)) && !_substitutions.get(currentHash).equalsMemory(_target))
+		while (!_substitutions.get(currentHash).isEmptyMemory() && !_substitutions.get(currentHash).equalsMemory(_target))
 			currentHash =_substitutions.get(currentHash).hashMemory();
 
-		return !Logic.isEmptyMemory(_substitutions.get(currentHash));
+		return !_substitutions.get(currentHash).isEmptyMemory();
 	}
 }
