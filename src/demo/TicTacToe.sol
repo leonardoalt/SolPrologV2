@@ -2,9 +2,14 @@
 pragma solidity ^0.6.7;
 pragma experimental ABIEncoderV2;
 
+import './TicTacToeRules.sol';
 import './TicTacToeBoard.sol';
+import '../Logic.sol';
+import '../Prolog.sol';
 
-contract TicTacToe is TicTacToeBoard {
+contract TicTacToe is TicTacToeBoard, TicTacToeRules {
+	using Substitution for Substitution.Info;
+
 	struct GameState {
 		Field[3][3] board;
 		Field nextPlayer;
@@ -12,7 +17,15 @@ contract TicTacToe is TicTacToeBoard {
 		uint guestStake;
 	}
 
+	Rule[] moveRules;
+	Rule[] winnerRules;
+	Substitution.Info substitutions;
 	mapping(address => mapping(address => GameState)) games;
+
+	constructor() public {
+		loadMoveRules(moveRules);
+		loadWinnerRules(winnerRules);
+	}
 
 	function newGame(address _opponent) external payable {
 		GameState storage ownGame = games[msg.sender][_opponent];
@@ -48,7 +61,7 @@ contract TicTacToe is TicTacToeBoard {
 		return findGame(_opponent);
 	}
 
-	function winner(address _opponent) public view returns (Field) {
+	function winner(address _opponent) public returns (Field) {
 		GameState storage game = findGame(_opponent);
 
 		return findWinner(game.board);
@@ -125,82 +138,44 @@ contract TicTacToe is TicTacToeBoard {
 			return ownGame;
 	}
 
-	function movePossible(Field[3][3] memory _board) internal pure returns (bool) {
-		for (uint i = 0; i < 3; ++i)
-			for (uint j = 0; j < 3; ++j)
-				if (_board[i][j] == Field.Blank)
-					return true;
+	function movePossible(Field[3][3] memory _board) internal returns (bool) {
+		bool success = Prolog.query(
+			pred("move", Var("P"), boardToTerm(_board), Var("BoardAfter")),
+			moveRules,
+			substitutions
+		);
 
-		return false;
+		substitutions.clear();
+		return success;
 	}
 
 	function isValidMove(
 		Field _nextPlayer,
 		Field[3][3] memory _currentBoard,
 		Field[3][3] memory _nextBoard
-	) internal pure returns (bool) {
+	) internal returns (bool) {
 		require(_nextPlayer != Field.Blank);
 
-		for (uint i = 0; i < 3; ++i)
-			for (uint j = 0; j < 3; ++j) {
-				if (_currentBoard[i][j] != Field.Blank && _nextBoard[i][j] != Field.Blank && _currentBoard[i][j] != _nextBoard[i][j])
-					return false;
+		bool success = Prolog.query(
+			pred("move", fieldToAtom(_nextPlayer), boardToTerm(_currentBoard), boardToTerm(_nextBoard)),
+			moveRules,
+			substitutions
+		);
 
-				if (_currentBoard[i][j] != Field.Blank && _nextBoard[i][j] == Field.Blank)
-					return false;
-			}
-
-		uint xCountBefore = 0;
-		uint oCountBefore = 0;
-		uint xCountAfter = 0;
-		uint oCountAfter = 0;
-		for (uint i = 0; i < 3; ++i)
-			for (uint j = 0; j < 3; ++j) {
-				if (_currentBoard[i][j] == Field.X)
-					++xCountBefore;
-				if (_nextBoard[i][j] == Field.X)
-					++xCountAfter;
-
-				if (_currentBoard[i][j] == Field.O)
-					++oCountBefore;
-				if (_nextBoard[i][j] == Field.O)
-					++oCountAfter;
-			}
-
-		return
-			_nextPlayer == Field.X && xCountAfter == xCountBefore + 1 && oCountBefore == oCountAfter ||
-			_nextPlayer == Field.O && oCountAfter == oCountBefore + 1 && xCountBefore == xCountAfter;
+		substitutions.clear();
+		return success;
 	}
 
-	function findWinner(Field[3][3] memory _board) internal pure returns (Field) {
-		if (
-			_board[0][0] == Field.X && _board[0][1] == Field.X && _board[0][2] == Field.X ||
-			_board[1][0] == Field.X && _board[1][1] == Field.X && _board[1][2] == Field.X ||
-			_board[2][0] == Field.X && _board[2][1] == Field.X && _board[2][2] == Field.X ||
+	function findWinner(Field[3][3] memory _board) internal returns (Field) {
+		bool success = Prolog.query(
+			pred("winner", Var("P"), boardToTerm(_board)),
+			moveRules,
+			substitutions
+		);
+		require(success);
 
-			_board[0][0] == Field.X && _board[1][0] == Field.X && _board[2][0] == Field.X ||
-			_board[0][1] == Field.X && _board[1][1] == Field.X && _board[2][1] == Field.X ||
-			_board[0][2] == Field.X && _board[1][2] == Field.X && _board[2][2] == Field.X ||
-
-			_board[0][0] == Field.X && _board[1][1] == Field.X && _board[2][2] == Field.X ||
-			_board[0][2] == Field.X && _board[1][1] == Field.X && _board[2][0] == Field.X
-		)
-			return Field.X;
-
-		if (
-			_board[0][0] == Field.O && _board[0][1] == Field.O && _board[0][2] == Field.O ||
-			_board[1][0] == Field.O && _board[1][1] == Field.O && _board[1][2] == Field.O ||
-			_board[2][0] == Field.O && _board[2][1] == Field.O && _board[2][2] == Field.O ||
-
-			_board[0][0] == Field.O && _board[1][0] == Field.O && _board[2][0] == Field.O ||
-			_board[0][1] == Field.O && _board[1][1] == Field.O && _board[2][1] == Field.O ||
-			_board[0][2] == Field.O && _board[1][2] == Field.O && _board[2][2] == Field.O ||
-
-			_board[0][0] == Field.O && _board[1][1] == Field.O && _board[2][2] == Field.O ||
-			_board[0][2] == Field.O && _board[1][1] == Field.O && _board[2][0] == Field.O
-		)
-			return Field.O;
-
-		return Field.Blank;
+		Term memory winningPlayer = substitutions.followSubstitutionChain(Var("P"));
+		substitutions.clear();
+		return atomToField(winningPlayer);
 	}
 }

@@ -27,7 +27,7 @@ contract Player {
 		return ticTacToe.gameState(address(_opponent));
 	}
 
-	function winner(Player _opponent) external view returns (TicTacToe.Field) {
+	function winner(Player _opponent) external returns (TicTacToe.Field) {
 		return ticTacToe.winner(address(_opponent));
 	}
 
