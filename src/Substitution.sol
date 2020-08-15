@@ -64,4 +64,9 @@ library Substitution {
 			set(_info, hash, _info.frames[srcFrame][hash]);
 		}
 	}
+
+	function clear(Info storage _info) internal {
+		while (_info.usedKeys.length > 0)
+			pop(_info);
+	}
 }
