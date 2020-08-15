@@ -72,7 +72,7 @@ library Logic {
 		return _term.kind == TermKind.Ignore && _term.symbol == 0 && _term.arguments.length == 0;
 	}
 
-	function equalsMemory(Term memory _term1, Term memory _term2) internal view returns (bool) {
+	function equalsMemory(Term memory _term1, Term memory _term2) internal pure returns (bool) {
 		if (_term1.kind != _term2.kind || _term1.symbol != _term2.symbol || _term1.arguments.length != _term2.arguments.length)
 			return false;
 
