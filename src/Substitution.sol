@@ -69,4 +69,20 @@ library Substitution {
 		while (_info.usedKeys.length > 0)
 			pop(_info);
 	}
+
+	function followSubstitutionChain(
+		Info storage _info,
+		Term memory _term
+	) internal view returns (Term memory) {
+
+		bytes32 currentHash = _term.hashMemory();
+		Term memory currentTerm = _term;
+
+		while (!get(_info, currentHash).isEmptyMemory()) {
+			currentTerm = get(_info, currentHash);
+			currentHash = currentTerm.hashMemory();
+		}
+
+		return currentTerm;
+	}
 }
