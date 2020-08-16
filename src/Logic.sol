@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL V3
+// SPDX-License-Identifier: GPL-3.0-only
 pragma solidity ^0.6.7;
 
 enum TermKind {

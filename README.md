@@ -5,7 +5,7 @@ A Prolog engine written in Solidity.
 ```solidity
 pragma solidity ^0.7.0;
 
-// SPDX-License-Identifier: GPLv3
+// SPDX-License-Identifier: GPL-3.0-only
 
 contract PrologContract {
     struct Term {
